@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prism Puff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/",
+        "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/vision_bundle.mjs",
+        "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.21.0/dist/lil-gui.esm.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div id="hud">
+    <div class="level-pill"><span id="level-num">1/8</span><span id="level-name"></span></div>
+    <div id="puffs"></div>
+    <div id="hint" class="bubble"></div>
+    <button id="mute" class="icon-btn" title="Sound (M)">♪</button>
+    <button id="cam-btn" class="icon-btn" title="Camera size (C)">◉</button>
+  </div>
+
+  <div id="cam-wrap" class="hidden" data-status="off" data-size="large">
+    <video id="cam" playsinline muted></video>
+    <canvas id="cam-overlay"></canvas>
+    <div id="cam-status"></div>
+    <div id="cam-label">hand cam</div>
+  </div>
+
+  <div id="banner"></div>
+
+  <div id="title" class="screen">
+    <div class="card">
+      <h1>Prism <span>Puff</span></h1>
+      <p>Bounce the starlight to wake up the sleepy puffs.</p>
+      <button id="play-hand" class="btn">✋ Play with your hand</button>
+      <button id="play-mouse" class="btn secondary">Play with mouse</button>
+      <small>Pinch a mirror, twist your hand to turn it.<br />Mouse: drag around a mirror.</small>
+    </div>
+  </div>
+
+  <div id="finale" class="screen hidden">
+    <div class="card">
+      <h1>Everyone's <span>awake!</span></h1>
+      <p>You filled the sky with light. More levels are on the way.</p>
+      <button id="replay" class="btn">Play again</button>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
