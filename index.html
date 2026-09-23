@@ -57,6 +57,21 @@
     </div>
   </div>
 
+  <div id="file-warning" class="screen hidden">
+    <div class="card">
+      <h1>Almost <span>there!</span></h1>
+      <p>Browsers block the game when <b>index.html</b> is opened directly as a file.</p>
+      <p>Close this tab and double-click <b>start-game.bat</b> in the same folder instead. It opens the game at <b>http://localhost</b>.</p>
+      <small>Mac / Linux: run <code>python3 -m http.server 8000</code> in this folder, then open localhost:8000.</small>
+    </div>
+  </div>
+  <script>
+    // Opened by double-click? ES modules can't load from file://, so explain instead of doing nothing.
+    if (location.protocol === 'file:') {
+      document.getElementById('title').classList.add('hidden');
+      document.getElementById('file-warning').classList.remove('hidden');
+    }
+  </script>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

@@ -4,12 +4,11 @@ A cozy hand-tracking light puzzle. Pinch a mirror, twist your hand to turn it, a
 
 ## Run it
 
-The camera only works on `localhost` or `https`, so serve the folder instead of opening the file directly:
+Browsers won't run the game if you double-click `index.html`, because pages opened from `file://` can't load their own script modules. Serve it on `localhost` instead:
 
-```bash
-python3 -m http.server 8000   # or: npm run serve
-# open http://localhost:8000
-```
+- **Windows:** unzip the folder, then double-click **`start-game.bat`**. It starts a tiny local server (PowerShell, no install needed) and opens the game. Keep the black window open while you play.
+- **Mac / Linux:** `python3 -m http.server 8000` in this folder, then open http://localhost:8000.
+- **Online:** turn on GitHub Pages (repo Settings → Pages → Deploy from branch → pick this branch, `/ (root)`). You get an `https://…github.io/…` link where the webcam works and anyone can play.
 
 Choose **Play with your hand** (webcam) or **Play with mouse** (drag around a mirror to turn it).
 
