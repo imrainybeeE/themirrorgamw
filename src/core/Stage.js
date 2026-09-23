@@ -11,7 +11,8 @@ export class Stage {
   constructor(container) {
     this.container = container;
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const touch = window.matchMedia?.('(pointer: coarse)').matches;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, touch ? CONFIG.render.touchPixelRatio : CONFIG.render.maxPixelRatio));
     this.renderer.toneMapping = THREE.NoToneMapping; // keep pastel colors exact
     this.renderer.setClearColor(PALETTE.bg);
     container.appendChild(this.renderer.domElement);

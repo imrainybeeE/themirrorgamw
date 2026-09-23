@@ -1,4 +1,4 @@
-// Mouse / touch as a Pointer. Press = pinch. Rotation comes from dragging around the pivot.
+// Mouse / touch / pencil as a Pointer. Press = pinch. Rotation comes from dragging around the pivot.
 export class MouseInput {
   constructor(el) {
     this.pointer = { present: false, sx: 0.5, sy: 0.5, pinching: false, twist: null, pinchAmount: 0, source: 'mouse' };
@@ -24,6 +24,10 @@ export class MouseInput {
     };
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', up);
+    // iOS Safari can still scroll or zoom mid-drag despite touch-action; block it on the canvas.
+    const block = (e) => e.preventDefault();
+    el.addEventListener('touchmove', block, { passive: false });
+    el.addEventListener('gesturestart', block);
     el.addEventListener('pointerleave', (e) => { if (!this.pointer.pinching && e.pointerType === 'mouse') this.pointer.present = false; });
   }
 }

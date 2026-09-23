@@ -77,6 +77,20 @@ def process(name, rel):
     print(f'{name}: face center=({cx:.0f},{cy:.0f}) r={radius:.0f}px of {w}x{h}')
 
 
+def make_icons():
+    # App icon for iPad/phone home screens: an awake (butter) puff on a pink tile.
+    face = Image.open(ROOT / 'puff_awake_face.png').convert('RGBA')
+    for size in (180, 512):
+        f = face.resize((int(size * 1.3), int(size * 1.3)), Image.LANCZOS)  # face fills ~75% of the tile
+        r, g, b, a = f.split()
+        f = Image.merge('RGBA', (r, g.point(lambda v: v * 232 // 255), b.point(lambda v: v * 163 // 255), a))
+        tile = Image.new('RGBA', (size, size), (255, 214, 232, 255))
+        off = (size - f.size[0]) // 2
+        tile.alpha_composite(f, (off, off))
+        tile.convert('RGB').save(ROOT.parent / f'icon-{size}.png', optimize=True)
+
+
 if __name__ == '__main__':
     for n, p in SOURCES.items():
         process(n, p)
+    make_icons()

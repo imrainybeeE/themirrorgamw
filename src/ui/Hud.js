@@ -16,6 +16,8 @@ export class Hud {
     };
     this.ctx = this.el.overlay.getContext('2d');
     $('cam-btn').addEventListener('click', () => this.cycleCamSize());
+    // On touch screens the playfield is precious; start the hand cam small.
+    if (window.matchMedia?.('(pointer: coarse)').matches) this.el.camWrap.dataset.size = 'small';
     this.hintTimer = null;
 
     events.on('levelStart', ({ level, index, total }) => {

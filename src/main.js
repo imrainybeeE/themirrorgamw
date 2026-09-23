@@ -50,6 +50,10 @@ function begin(withHand) {
 }
 $('play-hand').addEventListener('click', () => begin(true));
 $('play-mouse').addEventListener('click', () => begin(false));
+if (window.matchMedia?.('(pointer: coarse)').matches) {
+  $('play-mouse').textContent = 'Play with touch';
+  $('mouse-tip').textContent = 'Touch: drag your finger around a mirror.';
+}
 $('replay').addEventListener('click', () => {
   $('finale').classList.add('hidden');
   game.start(0);

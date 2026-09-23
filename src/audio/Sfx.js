@@ -6,6 +6,10 @@ export class Sfx {
   constructor() {
     this.ctx = null;
     this.muted = false;
+    // iOS Safari sometimes leaves the context suspended even after the first tap; keep nudging it.
+    window.addEventListener('pointerdown', () => {
+      if (this.ctx && this.ctx.state !== 'running') this.ctx.resume();
+    });
   }
 
   /** Must be called from a user gesture (click / key) because of browser autoplay rules. */

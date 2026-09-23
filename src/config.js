@@ -24,6 +24,10 @@ export const ASSETS = {
 };
 
 export const CONFIG = {
+  render: {
+    maxPixelRatio: 2, // computers
+    touchPixelRatio: 1.25, // tablets/phones: the pixel filter hides it and it keeps iPads smooth
+  },
   field: { width: 16, height: 10 }, // world units visible (XZ plane)
   camera: { tilt: 0.28, padding: 1.1 }, // tilt in radians from straight-down
 

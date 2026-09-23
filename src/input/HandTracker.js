@@ -20,6 +20,9 @@ export class HandTracker {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false,
       });
+      // Safari only plays camera video inline when both are set in code, not just in HTML.
+      this.video.muted = true;
+      this.video.setAttribute('playsinline', '');
       this.video.srcObject = stream;
       await this.video.play();
 
@@ -34,12 +37,14 @@ export class HandTracker {
         minHandPresenceConfidence: 0.5,
         minTrackingConfidence: 0.5,
       });
+      let slow = false;
       try {
         this.landmarker = await make('GPU');
       } catch {
         this.landmarker = await make('CPU');
+        slow = true;
       }
-      set('ready', 'Show me your hand!');
+      set('ready', slow ? 'Show me your hand! (slow mode)' : 'Show me your hand!');
       return true;
     } catch (err) {
       console.warn('[HandTracker]', err);

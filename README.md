@@ -20,6 +20,16 @@ Choose **Play with your hand** (webcam) or **Play with mouse** (drag around a mi
 
 Add `?debug` to the URL for the live tuning panel. It also adds `N` / `P` to change level and `S` to snap mirrors to the solution. `?level=5` starts on a given level.
 
+## iPad / iPhone
+
+The iPad can't run the local server, and Safari only allows the camera on `https://` pages, so host the game with **GitHub Pages** (see above) and open that link in Safari. It's the same link and the same code as on a computer; the game notices a touch screen by itself and adjusts:
+
+- "Play with touch": drag your finger around a mirror to turn it.
+- Hand tracking works with the front camera. Prop the iPad up in landscape so your hand is in view.
+- The hand cam starts small, rendering is lighter, and in portrait a hint suggests turning sideways.
+- Share → **Add to Home Screen** gives a full-screen app icon.
+- No sound? Check the silent switch / Control Center mute; iPadOS mutes web audio with it.
+
 ## Tests
 
 ```bash
