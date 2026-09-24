@@ -186,13 +186,14 @@ export class Game {
     if (!m || strength <= 0) return out;
     const bounce = result.bounces.find((b) => b.mirrorId === m.id);
     if (!bounce) return out;
-    // Useful shots: any puff, or the pivot of another mirror (makes chaining much friendlier).
-    const aims = [
-      ...this.level.targets.map((tg) => tg.worldPos()),
-      ...this.level.mirrors.filter((o) => o !== m).map((o) => ({ x: o.x, z: o.z })),
-    ];
+    // Useful shots, in priority order: sleepy puffs first, then pivots of mirrors the light hasn't
+    // visited yet (makes chaining friendlier). Never aim back at mirrors already in the path.
     const windowRad = (CONFIG.mirror.snapAssistDeg * Math.PI) / 180;
-    const ideal = idealMirrorAngle(bounce, { angle: m.inputAngle }, aims, windowRad);
+    const visited = new Set(result.bounces.slice(0, bounce.index + 1).map((b) => b.mirrorId));
+    const puffs = this.level.targets.map((tg) => tg.worldPos());
+    const pivots = this.level.mirrors.filter((o) => !visited.has(o.id)).map((o) => ({ x: o.x, z: o.z }));
+    const ideal = idealMirrorAngle(bounce, { angle: m.inputAngle }, puffs, windowRad)
+      ?? idealMirrorAngle(bounce, { angle: m.inputAngle }, pivots, windowRad);
     if (ideal === null) return out;
     const diff = ideal - m.inputAngle;
     const k = strength * (1 - Math.abs(diff) / windowRad); // pull grows as you get closer, no jump at the edge
