@@ -92,6 +92,7 @@ export class Mirror extends Entity {
     this.updateBase(dt);
     let goal = this.inputAngle;
     if (assistAngle !== null) goal = assistAngle;
+    this.goal = goal; // where the mirror is heading (input + aim assist); kept on release
     this.angle += lineAngleDiff(goal, this.angle) * damp(CONFIG.mirror.rotateLerp, dt);
 
     this.glow.target = this.grabbed ? 1 : this.hovered ? 0.6 : 0;

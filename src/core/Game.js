@@ -169,8 +169,9 @@ export class Game {
   release() {
     const m = this.grabbed;
     if (!m) return;
-    // Keep whatever angle aim assist settled on, so letting go never nudges the beam off target.
-    m.steer(m.angle);
+    // Keep the angle the mirror was heading to (including aim assist), not the lagging visual angle,
+    // so a quick flick-and-release never loses rotation or nudges the beam off target.
+    m.steer(m.goal ?? m.inputAngle);
     m.grabbed = false;
     m.boing(3);
     this.grabbed = this.grab = null;

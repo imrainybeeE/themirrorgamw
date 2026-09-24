@@ -161,7 +161,7 @@ for (let f = 0; f < NFRAMES; f++) {
       const m = window.prismPuff.game.level.mirrors[i];
       return { x: m.x, z: m.z, a: m.inputAngle, s: m.solution };
     }, active.mirror);
-    if (!turnState.has(active)) turnState.set(active, { a0: info.a, d: lineDiff(info.s, info.a) });
+    if (!turnState.has(active)) turnState.set(active, { a0: info.a, d: lineDiff(info.s, info.a), ang: info.a });
     const st = turnState.get(active);
     const R = 1.0;
     let ang;
@@ -174,13 +174,26 @@ for (let f = 0; f < NFRAMES; f++) {
       // Drag around the pivot with a small overshoot, so aim assist visibly snaps it home.
       const k = Math.min(1, (t - active.t0) / (active.t1 - active.t0));
       const over = Math.sin(k * Math.PI) * 0.07 * Math.sign(st.d || 1);
-      ang = st.a0 + st.d * ease(k) + over;
+      // Closed loop: move the pointer by however far the mirror is from where it should be this frame,
+      // which cancels small pointer-mapping errors (zoom punches, CRT warp) and ends exactly on the solution.
+      const want = st.a0 + st.d * ease(k) + over;
+      st.ang += want - info.a;
+      ang = st.ang;
       pinching = t <= active.t1;
       cursor = await page.evaluate(([x, z]) => window.__cap.worldToPointer(x, z), [info.x + Math.cos(ang) * R, info.z + Math.sin(ang) * R]);
     }
   }
   await page.evaluate(([sx, sy, p]) => window.__cap.setPointer(sx, sy, p), [cursor.sx, cursor.sy, pinching]);
 
+  if (process.env.DEBUG_TURNS) {
+    for (const p of plan) if (p.kind === 'turn' && !p.logged && t > p.t1 + 0.2) {
+      p.logged = true;
+      console.log('turn', p.level + 1, p.mirror, JSON.stringify(await page.evaluate((i) => {
+        const g = window.prismPuff.game, m = g.level.mirrors[i];
+        return { idx: g.levelIndex, input: +m.inputAngle.toFixed(3), angle: +m.angle.toFixed(3), sol: m.solution, charge: g.level.targets.map((t) => +t.charge.toFixed(2)) };
+      }, p.mirror)));
+    }
+  }
   // Beat punches: big on downbeats, small on other beats.
   const beat = Math.floor(t / BEAT + 1e-6);
   if (beat !== lastBeat) {
