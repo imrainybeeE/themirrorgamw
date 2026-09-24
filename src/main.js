@@ -11,10 +11,12 @@ import { BeamRenderer } from './fx/BeamRenderer.js';
 import { Particles } from './fx/Particles.js';
 import { Juice } from './fx/Juice.js';
 import { Sfx } from './audio/Sfx.js';
+import { Voice } from './audio/Voice.js';
 import { Hud } from './ui/Hud.js';
 
 const params = new URLSearchParams(location.search);
 const DEBUG = params.has('debug');
+const CAPTURE = params.has('capture'); // video recording mode, driven by tools/video/capture.mjs
 const startLevel = Math.min(LEVELS.length - 1, Math.max(0, (parseInt(params.get('level'), 10) || 1) - 1));
 
 const stage = new Stage(document.getElementById('stage'));
@@ -36,8 +38,11 @@ const loop = new Loop(
     hud.update(game, input);
   },
   (dt, t) => stage.render(t),
+  { manual: CAPTURE },
 );
-const juice = new Juice({ stage, particles, sfx, loop, game });
+const voice = new Voice({ clock: () => loop.clock, rand: CAPTURE ? seeded(7) : Math.random });
+voice.capture = CAPTURE;
+const juice = new Juice({ stage, particles, sfx, voice, loop, game });
 loop.start();
 
 // --- Screens ---------------------------------------------------------------
@@ -61,11 +66,16 @@ $('replay').addEventListener('click', () => {
 events.on('gameComplete', () => $('finale').classList.remove('hidden'));
 
 const muteBtn = $('mute');
-const toggleMute = () => muteBtn.classList.toggle('off', sfx.toggleMute());
+const toggleMute = () => {
+  const muted = sfx.toggleMute();
+  if (voice.muted !== muted) voice.toggleMute();
+  muteBtn.classList.toggle('off', muted);
+};
 muteBtn.addEventListener('click', toggleMute);
 
 window.addEventListener('keydown', (e) => {
   if (e.key === 'm' || e.key === 'M') toggleMute();
+  if (e.key === 'v' || e.key === 'V') voice.toggleMute();
   if (e.key === 'x' || e.key === 'X') stage.pixel.enabled = !stage.pixel.enabled;
   if (e.key === 'c' || e.key === 'C') hud.cycleCamSize();
   if (!DEBUG) return;
@@ -75,7 +85,28 @@ window.addEventListener('keydown', (e) => {
 });
 
 // Handy for poking at things from the console and for automated tests.
-window.prismPuff = { game, stage, input, sfx, CONFIG, events, begin };
+window.prismPuff = { game, stage, input, sfx, voice, CONFIG, events, begin };
+
+if (CAPTURE) {
+  // Hooks for the video pipeline: exact frame stepping, offline soundtrack, voice log, beat punches.
+  window.prismPuff.capture = {
+    step: (dt) => loop.step(dt),
+    clock: () => loop.clock,
+    startOffline: (seconds) => sfx.startOffline(seconds, () => loop.clock),
+    finishOffline: async () => {
+      const wav = await sfx.finishOffline();
+      let s = '';
+      for (let i = 0; i < wav.length; i += 0x8000) s += String.fromCharCode(...wav.subarray(i, i + 0x8000));
+      return btoa(s);
+    },
+    voiceLog: () => voice.log,
+    punch: (amount = 0.35) => juice.zoom.kick(amount),
+  };
+}
+
+function seeded(seed) {
+  return () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+}
 
 // --- Debug tuning panel (?debug) -----------------------------------------------
 if (DEBUG) {

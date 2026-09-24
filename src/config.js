@@ -60,6 +60,8 @@ export const CONFIG = {
     maxLength: 60,
     width: 0.2, // half-width of the ribbon
     sparkleSpeed: 2.2,
+    revealDelay: 0.5, // seconds after a level starts before the beam grows out
+    revealSpeed: 28, // world units per second the beam grows at level start
   },
 
   target: {
@@ -91,6 +93,14 @@ export const CONFIG = {
       vignette: 0.28,
       aberration: 1.2, // chromatic fringe in screen pixels
     },
+  },
+
+  voice: {
+    enabled: true, // V toggles in-game
+    volume: 0.9,
+    narrator: { pitch: 1.1, rate: 1.0 },
+    puff: { pitch: 1.9, rate: 1.15 },
+    puffCooldown: 1.2, // seconds between puff lines
   },
 
   audio: {

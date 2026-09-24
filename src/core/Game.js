@@ -86,8 +86,7 @@ export class Game {
     this.emitBounceEvents(result, dt);
 
     // Beam grows out of the emitter at level start.
-    const revealStart = 0.5;
-    if (this.stateTime > revealStart) this.revealLen += dt * 28;
+    if (this.stateTime > CONFIG.beam.revealDelay) this.revealLen += dt * CONFIG.beam.revealSpeed;
     this.beam.setReveal(this.state === 'playing' || this.state === 'clear' ? this.revealLen : 0);
     this.beam.update(result, t);
 

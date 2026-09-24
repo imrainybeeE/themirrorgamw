@@ -17,6 +17,7 @@ Choose **Play with your hand** (webcam) or **Play with mouse** (drag around a mi
 | `M` | mute |
 | `X` | toggle the pixel/CRT filter |
 | `C` | hand cam size: large, small, hidden |
+| `V` | voices on/off (narrator + talking puffs) |
 
 Add `?debug` to the URL for the live tuning panel. It also adds `N` / `P` to change level and `S` to snap mirrors to the solution. `?level=5` starts on a given level.
 
@@ -47,5 +48,7 @@ The tests cover the reflection math, aim assist, pinch hysteresis and twist trac
 - `src/fx/Juice.js` turns those events into particles, sounds, hitstop and zoom. **Put new "satisfying" effects here.**
 - `src/fx/PixelPass.js` is the Balatro-style pixelate, dither, scanline and CRT pass.
 - `src/audio/Sfx.js` holds the synthesized sounds (no audio files).
+- `src/audio/Voice.js` + `src/audio/lines.js` are the talking narrator and puffs (browser text-to-speech). Edit `lines.js` to change what they say.
+- `tools/video/` renders a beat-synced gameplay video (see its README).
 - `src/input/` covers the webcam, MediaPipe, One Euro smoothing and the gesture-to-pointer mapping, with mouse fallback.
 - `assets/sprites/` has the hand-drawn puff sprites. Sources live in `assets/sprites/src/`. After changing a drawing, run `python3 tools/process_sprites.py` (needs `pip install pillow numpy scipy`).

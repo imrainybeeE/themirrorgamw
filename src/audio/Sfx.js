@@ -8,16 +8,20 @@ export class Sfx {
     this.muted = false;
     // iOS Safari sometimes leaves the context suspended even after the first tap; keep nudging it.
     window.addEventListener('pointerdown', () => {
-      if (this.ctx && this.ctx.state !== 'running') this.ctx.resume();
+      if (this.ctx && !this.offlineClock && this.ctx.state !== 'running') this.ctx.resume();
     });
   }
 
   /** Must be called from a user gesture (click / key) because of browser autoplay rules. */
   unlock() {
-    if (this.ctx) { this.ctx.resume(); return; }
+    if (this.ctx) { if (!this.offlineClock) this.ctx.resume(); return; }
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
-    const ctx = (this.ctx = new Ctx());
+    this._build(new Ctx());
+  }
+
+  _build(ctx) {
+    this.ctx = ctx;
     this.master = ctx.createGain();
     this.master.gain.value = CONFIG.audio.master;
     const comp = ctx.createDynamicsCompressor();
@@ -41,10 +45,32 @@ export class Sfx {
     return !!this.ctx && !this.muted;
   }
 
+  /** Audio-clock time sounds are scheduled against (virtual game clock while capturing). */
+  get now() {
+    return this.offlineClock ? this.offlineClock() : this.ctx.currentTime;
+  }
+
+  /**
+   * Video capture: render every sound into an OfflineAudioContext at virtual time `clock()`
+   * instead of playing it, so the soundtrack lines up with captured frames exactly.
+   */
+  startOffline(seconds, clock) {
+    this.ctx = null;
+    const ctx = new OfflineAudioContext(2, Math.ceil(seconds * 48000), 48000);
+    this.offlineClock = clock;
+    this._build(ctx);
+  }
+
+  /** Finish capture: returns the rendered soundtrack as a 16-bit stereo WAV (Uint8Array). */
+  async finishOffline() {
+    const buf = await this.ctx.startRendering();
+    return encodeWav(buf);
+  }
+
   /** A bell-like tone: sine + soft overtone with fast attack and long exponential tail. */
   bell(freq, { vol = 0.3, decay = 1.2, when = 0, type = 'sine', overtone = 2.0, echo = true } = {}) {
     if (!this.ready) return;
-    const ctx = this.ctx, t = ctx.currentTime + when;
+    const ctx = this.ctx, t = this.now + when;
     const g = ctx.createGain();
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(vol, t + 0.008);
@@ -70,7 +96,7 @@ export class Sfx {
   /** Pitch sweep "bloop" for grabs and pops. */
   sweep(f0, f1, { vol = 0.2, dur = 0.12, when = 0, type = 'sine' } = {}) {
     if (!this.ready) return;
-    const ctx = this.ctx, t = ctx.currentTime + when;
+    const ctx = this.ctx, t = this.now + when;
     const o = ctx.createOscillator();
     o.type = type;
     o.frequency.setValueAtTime(f0, t);
@@ -110,10 +136,24 @@ export class Sfx {
     [0, 2, 4, 5, 7, 9, 10].forEach((k, j) => this.bell(this.note(k + 3), { vol: CONFIG.audio.chime, decay: 2.0, when: j * 0.09 }));
     [0, 2, 4].forEach((k) => this.bell(this.note(k) / 2, { vol: 0.15, decay: 2.5, when: 0.7, type: 'triangle' }));
   }
-  appear(i) { this.sweep(300 + i * 60, 900 + i * 90, { vol: 0.06, dur: 0.1 }); }
+  appear(i, when = 0) { this.sweep(300 + i * 60, 900 + i * 90, { vol: 0.06, dur: 0.1, when }); }
 
   toggleMute() {
     this.muted = !this.muted;
     return this.muted;
   }
+}
+
+function encodeWav(buf) {
+  const ch = buf.numberOfChannels, len = buf.length, rate = buf.sampleRate;
+  const out = new DataView(new ArrayBuffer(44 + len * ch * 2));
+  const str = (o, s) => [...s].forEach((c, i) => out.setUint8(o + i, c.charCodeAt(0)));
+  str(0, 'RIFF'); out.setUint32(4, 36 + len * ch * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+  out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, ch, true);
+  out.setUint32(24, rate, true); out.setUint32(28, rate * ch * 2, true); out.setUint16(32, ch * 2, true);
+  out.setUint16(34, 16, true); str(36, 'data'); out.setUint32(40, len * ch * 2, true);
+  const data = [...Array(ch)].map((_, c) => buf.getChannelData(c));
+  let o = 44;
+  for (let i = 0; i < len; i++) for (let c = 0; c < ch; c++, o += 2) out.setInt16(o, Math.max(-1, Math.min(1, data[c][i])) * 0x7fff, true);
+  return new Uint8Array(out.buffer);
 }

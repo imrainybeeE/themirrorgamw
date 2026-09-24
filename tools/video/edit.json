@@ -1,0 +1,28 @@
+{
+  "bpm": 77,
+  "bars": 9,
+  "beatsPerBar": 4,
+  "fps": 60,
+  "width": 1280,
+  "height": 720,
+  "note": "Bar 0 = title card, bars 1-8 = levels 1-8 (one bar each). Align your music's first downbeat to 0:00.",
+  "captureConfig": {
+    "target.chargeTime": 0.35,
+    "fx.levelClearDelay": 999,
+    "fx.hitstopMs": 60,
+    "beam.revealDelay": 0.2,
+    "beam.revealSpeed": 90,
+    "mirror.rotateLerp": 26
+  },
+  "tutor": [
+    "Prism Puff! Wake the sleepy puffs!",
+    "Pinch a mirror. Twist to turn.",
+    "Small twist, big turn.",
+    "Bounce it twice!",
+    "Light shines through puffs.",
+    "Striped mirrors are stuck.",
+    "Go around the clouds.",
+    "Zig zag!",
+    "Wake everyone up!"
+  ]
+}

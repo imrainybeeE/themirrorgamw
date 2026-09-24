@@ -7,8 +7,9 @@ import { Spring } from './Tween.js';
 const PASTELS = [PALETTE.pink, PALETTE.mint, PALETTE.sky, PALETTE.lavender, PALETTE.butter, PALETTE.hotPink];
 
 export class Juice {
-  constructor({ stage, particles, sfx, loop, game }) {
-    Object.assign(this, { stage, particles, sfx, loop, game });
+  constructor({ stage, particles, sfx, voice, loop, game }) {
+    Object.assign(this, { stage, particles, sfx, voice, loop, game });
+    this.litOnce = new Set(); // puffs that already mumbled this level
     this.zoom = new Spring(1, 60, 9);
     this.sparkleTimer = 0;
     const y = CONFIG.mirror.beamHeight;
@@ -54,8 +55,19 @@ export class Juice {
     });
 
     events.on('levelStart', ({ level }) => {
-      level.entities.forEach((e, i) => setTimeout(() => this.sfx.appear(i), (0.15 + i * 0.07) * 1000));
+      level.entities.forEach((e, i) => this.sfx.appear(i, 0.15 + i * 0.07));
+      this.litOnce.clear();
     });
+    events.on('levelStart', ({ level, index }) => this.voice.say('levelStart', { n: index + 1, name: level.data.name }));
+    events.on('targetLit', ({ target }) => {
+      if (target.awake || this.litOnce.has(target.id)) return;
+      this.litOnce.add(target.id);
+      this.voice.say('puffLit');
+    });
+    events.on('targetFull', () => this.voice.say('puffWake'));
+    events.on('targetSleep', () => this.voice.say('puffSleep'));
+    events.on('levelClear', () => this.voice.say('levelClear'));
+    events.on('gameComplete', () => this.voice.say('gameComplete'));
 
     events.on('levelClear', ({ level }) => {
       this.loop.hitstop(CONFIG.fx.hitstopMs);
